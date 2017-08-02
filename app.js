@@ -19,18 +19,18 @@ function start() {
             body = Buffer.concat(body).toString();
             // at this point, `body` has the entire request body stored in it as a string
             console.log('body', body);
-            var obj = body.message;
-            console.log(obj)
-            // var id = body.message.chat.id;
-            // var text = body.message.text;
-            // var result = /hi/.test(text);
-            // var reply = "你好，全世界最可爱的宝宝";
-            // if (result) {
-            //     request({
-            //         url: `https://api.telegram.org/bot
-            //     ${token}/sendMessage?chat_id=${id}&text=${reply}`
-            //     })
-            // }
+            // var obj = body.message;
+            // console.log(obj)
+            var id = body.message.chat.id;
+            var text = body.message.text;
+            var result = /hi/.test(text);
+            var reply = "你好，全世界最可爱的宝宝";
+            if (result) {
+                request({
+                    url: `https://api.telegram.org/bot
+                ${token}/sendMessage?chat_id=${id}&text=${reply}`
+                })
+            }
         });
         response.write("Hello World");
         response.end();
