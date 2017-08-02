@@ -2,10 +2,9 @@
 var http = require("http");
 var url = require("url");
 var request = require('./request.js');
-
-
+var ENV = process.env.NODE_ENV;
 var token = "345452566:AAFU0_F0sGnIrrUHBqrdr51WdZrtrhQJXwk";
-
+console.log(ENV)
 // var a = {ba:1,c:2}
 // const {ba} = a;
 function start() {
@@ -25,12 +24,15 @@ function start() {
             var text = obj.message.text;
             var reply = "hi";
             var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${reply}`;
-        console.log(url)
             if (text) {
-                request({
-                    url,
-                    proxy: "http://127.0.0.1:1087"
-                }).then(function(r) {
+                const config = {
+                    url
+                }
+                console.log(ENV)
+                if(ENV !== 'production'){
+                  config.proxy = "http://127.0.0.1:1087"
+                }
+                request(config).then(function(r) {
                     console.log(r)
                 }).catch(function(e) {
                     console.log(e)
