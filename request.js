@@ -1,3 +1,3 @@
-var axios = require('axios');
+var request = require('request-promise');
 
-exports.request = axios;
+module.exports = request;

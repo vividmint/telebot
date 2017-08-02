@@ -3,6 +3,7 @@ var http = require("http");
 var url = require("url");
 var request = require('./request.js');
 
+
 var token = "345452566:AAFU0_F0sGnIrrUHBqrdr51WdZrtrhQJXwk";
 
 // var a = {ba:1,c:2}
@@ -19,16 +20,21 @@ function start() {
             body.push(chunk);
         }).on('end', () => {
             body = Buffer.concat(body).toString();
-            console.log('body', body);
             var obj = JSON.parse(body);
             var id = obj.message.chat.id;
             var text = obj.message.text;
             var reply = "hi";
+            var url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${reply}`;
+        console.log(url)
             if (text) {
-                request(
-                    `https://api.telegram.org/bot
-                ${token}/sendMessage?chat_id=${id}&text=${reply}`
-                )
+                request({
+                    url,
+                    proxy: "http://127.0.0.1:1087"
+                }).then(function(r) {
+                    console.log(r)
+                }).catch(function(e) {
+                    console.log(e)
+                })
             }
         });
         response.write("Hello World");
