@@ -1,7 +1,7 @@
 "use strict";
 var http = require("http");
 var url = require("url");
-var {request} = require('./request.js');
+var request = require('./request.js');
 
 var token = "345452566:AAFU0_F0sGnIrrUHBqrdr51WdZrtrhQJXwk";
 
@@ -25,10 +25,10 @@ function start() {
             var text = obj.message.text;
             var reply = "hi";
             if (text) {
-                request({
-                    url: `https://api.telegram.org/bot
+                request(
+                    `https://api.telegram.org/bot
                 ${token}/sendMessage?chat_id=${id}&text=${reply}`
-                })
+                )
             }
         });
         response.write("Hello World");
