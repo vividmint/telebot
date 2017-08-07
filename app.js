@@ -58,6 +58,7 @@ function start() {
             var chatId = obj.message.chat.id;
             var text = obj.message.text;
             var uid = obj.message.chat.username;
+            var reply = "en";
             toLogin(uid);
 
 
