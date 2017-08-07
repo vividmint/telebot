@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^0.16.2",
+    "leancloud-realtime": "^3.5.5",
+    "leancloud-storage": "^3.0.4",
     "request": "^2.81.0",
     "request-promise": "^4.2.1"
   }
