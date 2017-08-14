@@ -13,7 +13,7 @@ var router = new Router();
 app.use(bodyParser());
 const webhook = require('./controllers/webhook.js')
 
-router.post('/webhook', webhook.telebot)
+router.post('/webHook', webhook.telebot)
 
 app
     .use(router.routes())
