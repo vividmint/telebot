@@ -11,6 +11,8 @@ const {
 
 exports.telebot = async (ctx) => {
     const obj = ctx.request.body;
+    console.log('webhook request')
+    console.log('body',obj)
     var thirdPartyId = obj.message.from.id;
     var text = obj.message.text;
     var uid = obj.message.chat.username;
