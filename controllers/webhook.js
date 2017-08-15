@@ -3,16 +3,29 @@ const request = require('../request.js');
 const url = require("url");
 const ENV = process.env.NODE_ENV;
 
-
-
 const {
-    TELEBOT_TOKEN
+    TELEBOT_TOKEN,
+    BUTTON_LIKE,
+    BUTTON_UNLIKE,
+    LEANCLOUD_APP_ID,
+    LEANCLOUD_APP_KEY
 } = require('../constans.js');
 
-exports.telebot = async (ctx) => {
+exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
     console.log('webhook request')
-    console.log('body',obj)
+    console.log('body', obj)
+    if (obj.callback_query) {
+        let movieObj = JSON.parse(obj.callback_query.data);
+        if(movieObj.type==='like'){
+          let movieId = movieObj.movieId;
+          let _date = new Date();
+          let _createdAt = _date.getTime();
+
+          var insertLikeIdString = `INSERT INTO likeList(id,movieId,createdAt,updatedAt) VALUES(null,${movieId},${_createdAt},${_createdAt})`
+        }
+
+    }
     var thirdPartyId = obj.message.from.id;
     var text = obj.message.text;
     var uid = obj.message.chat.username;
@@ -31,8 +44,9 @@ exports.telebot = async (ctx) => {
         ctx.body = e;
         return;
     }
+    var lastViewId;
     if (queryResultArr.length === 0) {
-      //new user
+        //new user
         let signUpString = `INSERT INTO user(id, uid,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${uid}","${thirdPartyId}","${nickname}",${createdAt},1,"tg")`;
         try {
             var signUpRusult = await mysql.query(signUpString);
@@ -44,34 +58,58 @@ exports.telebot = async (ctx) => {
             ctx.body = e;
             return;
         }
-        var queryMovieString = `SELECT * FROM movie WHERE id=1`;
-        try {
-            var movieArr = await mysql.query(queryMovieString);
-            console.log("movieArr", movieArr);
-
-        } catch (e) {
-            console.log(e);
-            ctx.status = 504;
-            ctx.body = e;
-            return;
-        }
-        var movieData = movieArr[0];
-
-        reply = `${movieData.name}\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
-        console.log('reply',reply);
-
-
+        lastViewId = 1;
     } else {
-      //old user
-      reply = '你是个old man'
+        //old user
+        lastViewId = queryResultArr[0].lastViewId;
     }
-    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendMessage?chat_id=${thirdPartyId}&text=${encodeURIComponent(reply)}`;
-    console.log('url',url)
+    var queryMovieString = `SELECT * FROM movie WHERE id=${lastViewId}`;
+
+    try {
+        var movieArr = await mysql.query(queryMovieString);
+
+    } catch (e) {
+        console.log(e);
+        ctx.status = 504;
+        ctx.body = e;
+        return;
+    }
+    var movieData = movieArr[0];
+
+    reply = `${movieData.name}\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
+    console.log('reply', reply);
+
+    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendMessage`;
     let result = /movie/.test(text);
     if (result) {
         //根据环境变量设置代理
         const config = {
-            url
+            url,
+            method: "POST",
+            body: {
+                "chat_id": thirdPartyId,
+                "text": reply,
+                "reply_markup": {
+                    "inline_keyboard": [
+                        [{
+                                "text": BUTTON_LIKE,
+                                "callback_data": JSON.stringify({
+                                    "movieId": `${movieData.id}`,
+                                    "type":"like"
+                                })
+                            },
+                            {
+                                "text": BUTTON_UNLIKE,
+                                "callback_data": JSON.stringify({
+                                    "movieId": `${movieData.id}`,
+                                    "type":"nope"
+                                })
+                            }
+                        ]
+                    ]
+                }
+            },
+            json: true
         }
         console.log(ENV);
         if (ENV !== 'production') {
@@ -79,6 +117,7 @@ exports.telebot = async (ctx) => {
         }
         try {
             var tgResult = await request(config);
+            console.log("tgResult", tgResult)
 
         } catch (e) {
             ctx.status = 500;
