@@ -158,6 +158,7 @@ exports.telebot = async(ctx) => {
             return;
 
         }
+        console.log('last ok')
         ctx.body = 'ok';
     }
 
