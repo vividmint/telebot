@@ -24,6 +24,7 @@ exports.telebot = async(ctx) => {
         //用户发movie
         messageObj = obj;
     }
+
     var thirdPartyId = messageObj.message.from.id;
     var text = messageObj.message.text;
     var username = messageObj.message.chat.username;
@@ -77,6 +78,9 @@ exports.telebot = async(ctx) => {
                 console.log("like success", insertLikeIdString);
             } catch (e) {
                 console.log('e', e);
+                ctx.status = 500;
+                ctx.body = e;
+                return;
             }
 
         }
@@ -89,7 +93,10 @@ exports.telebot = async(ctx) => {
     try {
         var movieData = await queryMovieData(lastViewId);
     } catch (e) {
-        console.log(e)
+        console.log(e);
+        ctx.status = 500;
+        ctx.body = e;
+        return;
     }
 
     reply = `《${movieData.name}》\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
@@ -140,6 +147,9 @@ exports.telebot = async(ctx) => {
 
             } catch (e) {
                 console.log('e', e);
+                ctx.status = 500;
+                ctx.body = e;
+                return;
             }
 
         } catch (e) {
@@ -148,7 +158,7 @@ exports.telebot = async(ctx) => {
             return;
 
         }
-        ctx.body = tgResult;
+        ctx.body = 'ok';
     }
 
 }
