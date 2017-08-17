@@ -23,15 +23,19 @@ exports.telebot = async(ctx) => {
             let _createdAt = _date.getTime();
 
             var insertLikeIdString = `INSERT INTO likeList(id,movieId,createdAt,updatedAt) VALUES(null,${movieId},${_createdAt},${_createdAt})`;
-            var insertLikeIdResult = await mysql.query(insertLikeIdString);
-            console.log("like success");
+            try {
+                var insertLikeIdResult = await mysql.query(insertLikeIdString);
+                console.log("like success",insertLikeIdString);
+            } catch (e) {
+                console.log('e', e);
+            }
 
         }
 
     } else {
         var thirdPartyId = obj.message.from.id;
         var text = obj.message.text;
-        var uid = obj.message.chat.username;
+        var username = obj.message.chat.username;
         var nickname = obj.message.chat.first_name + obj.message.chat.last_name;
         var date = new Date();
         var createdAt = date.getTime();
@@ -48,9 +52,10 @@ exports.telebot = async(ctx) => {
             return;
         }
         var lastViewId;
+        console.log("queryResultArr",queryResultArr)
         if (queryResultArr.length === 0) {
             //new user
-            let signUpString = `INSERT INTO user(id, uid,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${uid}","${thirdPartyId}","${nickname}",${createdAt},1,"tg")`;
+            let signUpString = `INSERT INTO user(id, username,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${username}","${thirdPartyId}","${nickname}",${createdAt},1,"tg")`;
             try {
                 var signUpRusult = await mysql.query(signUpString);
                 console.log("signUpRusult", signUpRusult)
@@ -65,13 +70,15 @@ exports.telebot = async(ctx) => {
         } else {
             //old user
             lastViewId = queryResultArr[0].lastViewId;
+            console.log('here',lastViewId)
         }
 
     }
+    console.log("lastViewId",lastViewId)
     try {
         var movieData = await queryMovieData(lastViewId);
     } catch (e) {
-      console.log(e)
+        console.log(e)
     }
 
     reply = `《${movieData.name}》\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
@@ -116,7 +123,13 @@ exports.telebot = async(ctx) => {
             var tgResult = await request(config);
             console.log("tgResult", tgResult);
 
-            var setLastViewId = `UPDATE user SET lastViewId=${lastViewId+1} WHERE uid=${uid}`
+            var setLastViewId = `UPDATE user SET lastViewId=${lastViewId+1} WHERE username="${username}"`;
+            try{
+              var setLastViewIdResult = await mysql.query(setLastViewId);
+
+            }catch(e){
+              console.log('e',e);
+            }
 
         } catch (e) {
             ctx.status = 500;
