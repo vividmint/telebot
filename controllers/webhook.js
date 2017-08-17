@@ -14,11 +14,20 @@ const {
 exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
     console.log('webhook request')
-    console.log('body', obj);
-    var thirdPartyId = obj.message.from.id;
-    var text = obj.message.text;
-    var username = obj.message.chat.username;
-    var nickname = obj.message.chat.first_name + obj.message.chat.last_name;
+    var _obj = (JSON.stringify(obj,null,2));
+    console.log('body', _obj);
+    var messageObj;
+    if (obj.callback_query) {
+        //button消息
+        messageObj = obj.callback_query;
+    } else {
+        //用户发movie
+        messageObj = obj;
+    }
+    var thirdPartyId = messageObj.message.from.id;
+    var text = messageObj.message.text;
+    var username = messageObj.message.chat.username;
+    var nickname = messageObj.message.chat.first_name + messageObj.message.chat.last_name;
     var date = new Date();
     var createdAt = date.getTime();
     var reply;
