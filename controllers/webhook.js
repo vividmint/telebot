@@ -13,10 +13,11 @@ const {
 
 exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
+    console.log('=====================================')
     console.log('webhook request')
     var _obj = (JSON.stringify(obj,null,2));
     console.log('body', _obj);
-    var messageObj;
+    var messageObj,_movieObj;
     if (obj.callback_query) {
         //button消息
         messageObj = obj.callback_query;
@@ -65,8 +66,9 @@ exports.telebot = async(ctx) => {
         console.log('here', lastViewId)
     }
     if (obj.callback_query) {
+      console.log("obj.callback_query")
         let movieObj = JSON.parse(obj.callback_query.data);
-
+        _movieObj = movieObj;
         if (movieObj.type === 'like') {
             let movieId = movieObj.movieId;
             let _date = new Date();
@@ -92,8 +94,9 @@ exports.telebot = async(ctx) => {
     console.log("lastViewId", lastViewId)
     try {
         var movieData = await queryMovieData(lastViewId);
+        console.log("movieData",movieData)
     } catch (e) {
-        console.log(e);
+        console.log("e",e);
         ctx.status = 500;
         ctx.body = e;
         return;
@@ -103,7 +106,8 @@ exports.telebot = async(ctx) => {
 
     var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendMessage`;
     let result = /movie/.test(text);
-    if (result) {
+    console.log("result",result)
+    if (result || _movieObj) {
         //根据环境变量设置代理
         const config = {
             url,
@@ -160,6 +164,10 @@ exports.telebot = async(ctx) => {
         }
         console.log('last ok')
         ctx.body = 'ok';
+    }
+    else{
+      console.log("other")
+      ctx.body = "other";
     }
 
 }
