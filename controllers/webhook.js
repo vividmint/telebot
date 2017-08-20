@@ -14,7 +14,7 @@ const {
 exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
     console.log('=====================================')
-    console.log('webhook request')
+    console.log('webhook request',obj)
     var _obj = (JSON.stringify(obj, null, 2));
     var messageObj, _movieObj;
     if (obj.callback_query) {
@@ -106,7 +106,7 @@ exports.telebot = async(ctx) => {
             method: "POST",
             body: {
                 "chat_id": thirdPartyId,
-                "photo":movieData.picUrl,
+                "photo": movieData.picUrl,
                 "caption": reply,
                 "reply_markup": {
                     "inline_keyboard": [
@@ -125,6 +125,13 @@ exports.telebot = async(ctx) => {
                                 })
                             }
                         ]
+                    ],
+                    "keyboard": [
+                        [{
+                            "text": "🙋"
+                        }, {
+                            "text": "❤️"
+                        }]
                     ]
                 }
             },
