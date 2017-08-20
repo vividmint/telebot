@@ -109,6 +109,7 @@ exports.telebot = async(ctx) => {
     console.log("result",result)
     if (result || _movieObj) {
         //根据环境变量设置代理
+        console.log('next')
         const config = {
             url,
             method: "POST",
@@ -148,6 +149,7 @@ exports.telebot = async(ctx) => {
             var setLastViewId = `UPDATE user SET lastViewId=${lastViewId+1} WHERE username="${username}"`;
             try {
                 var setLastViewIdResult = await mysql.query(setLastViewId);
+                console.log("set ok")
 
             } catch (e) {
                 console.log('e', e);
@@ -157,6 +159,7 @@ exports.telebot = async(ctx) => {
             }
 
         } catch (e) {
+            console.log("e",e);
             ctx.status = 500;
             ctx.body = e;
             return;
