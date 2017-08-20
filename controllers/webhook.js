@@ -138,6 +138,7 @@ exports.telebot = async(ctx) => {
             },
             json: true
         }
+        console.log("config",config);
         console.log(ENV);
         if (ENV !== 'production') {
             config.proxy = "http://127.0.0.1:1087"
