@@ -15,9 +15,8 @@ exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
     console.log('=====================================')
     console.log('webhook request')
-    var _obj = (JSON.stringify(obj,null,2));
-    console.log('body', _obj);
-    var messageObj,_movieObj;
+    var _obj = (JSON.stringify(obj, null, 2));
+    var messageObj, _movieObj;
     if (obj.callback_query) {
         //button消息
         messageObj = obj.callback_query;
@@ -26,7 +25,7 @@ exports.telebot = async(ctx) => {
         messageObj = obj;
     }
 
-    var thirdPartyId = messageObj.message.from.id;
+    var thirdPartyId = messageObj.message.chat.id;
     var text = messageObj.message.text;
     var username = messageObj.message.chat.username;
     var nickname = messageObj.message.chat.first_name + messageObj.message.chat.last_name;
@@ -45,13 +44,11 @@ exports.telebot = async(ctx) => {
         return;
     }
     var lastViewId;
-    console.log("queryResultArr", queryResultArr)
     if (queryResultArr.length === 0) {
         //new user
         let signUpString = `INSERT INTO user(id, username,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${username}","${thirdPartyId}","${nickname}",${createdAt},1,"tg")`;
         try {
             var signUpRusult = await mysql.query(signUpString);
-            console.log("signUpRusult", signUpRusult)
 
         } catch (e) {
             console.log(e);
@@ -63,10 +60,8 @@ exports.telebot = async(ctx) => {
     } else {
         //old user
         lastViewId = queryResultArr[0].lastViewId;
-        console.log('here', lastViewId)
     }
     if (obj.callback_query) {
-      console.log("obj.callback_query")
         let movieObj = JSON.parse(obj.callback_query.data);
         _movieObj = movieObj;
         if (movieObj.type === 'like') {
@@ -77,7 +72,6 @@ exports.telebot = async(ctx) => {
             var insertLikeIdString = `INSERT INTO likeList(id,movieId,createdAt,updatedAt) VALUES(null,${movieId},${_createdAt},${_createdAt})`;
             try {
                 var insertLikeIdResult = await mysql.query(insertLikeIdString);
-                console.log("like success", insertLikeIdString);
             } catch (e) {
                 console.log('e', e);
                 ctx.status = 500;
@@ -91,12 +85,10 @@ exports.telebot = async(ctx) => {
 
         //用户发movie
     }
-    console.log("lastViewId", lastViewId)
     try {
         var movieData = await queryMovieData(lastViewId);
-        console.log("movieData",movieData)
     } catch (e) {
-        console.log("e",e);
+        console.log("e", e);
         ctx.status = 500;
         ctx.body = e;
         return;
@@ -104,18 +96,18 @@ exports.telebot = async(ctx) => {
 
     reply = `《${movieData.name}》\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
 
-    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendMessage`;
+
+    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
     let result = /movie/.test(text);
-    console.log("result",result)
     if (result || _movieObj) {
         //根据环境变量设置代理
-        console.log('next')
         const config = {
             url,
             method: "POST",
             body: {
                 "chat_id": thirdPartyId,
-                "text": reply,
+                "photo":movieData.picUrl,
+                "caption": reply,
                 "reply_markup": {
                     "inline_keyboard": [
                         [{
@@ -138,14 +130,13 @@ exports.telebot = async(ctx) => {
             },
             json: true
         }
-        console.log("config",config);
+        console.log("config", config);
         console.log(ENV);
         if (ENV !== 'production') {
             config.proxy = "http://127.0.0.1:1087"
         }
         try {
             var tgResult = await request(config);
-            console.log("tgResult", tgResult);
 
             var setLastViewId = `UPDATE user SET lastViewId=${lastViewId+1} WHERE username="${username}"`;
             try {
@@ -160,7 +151,7 @@ exports.telebot = async(ctx) => {
             }
 
         } catch (e) {
-            console.log("e",e);
+            console.log("e", e);
             ctx.status = 500;
             ctx.body = e;
             return;
@@ -168,10 +159,9 @@ exports.telebot = async(ctx) => {
         }
         console.log('last ok')
         ctx.body = 'ok';
-    }
-    else{
-      console.log("other")
-      ctx.body = "other";
+    } else {
+        console.log("other")
+        ctx.body = "other";
     }
 
 }
