@@ -133,7 +133,7 @@ exports.telebot = async(ctx) => {
                             }
                         ]
                     ],
-                    "resize_keyboard":true
+                    "resize_keyboard": true
                 }
             },
             json: true
@@ -195,9 +195,11 @@ async function queryMovieData(id) {
 }
 
 async function queryLikeList(id) {
+    console.log("here", id);
     var queryListString = `SELECT * FROM likeList WHERE uid=${id}`;
     try {
         var likeListArr = await mysql.query(queryListString);
+        console.log("here likeListArr", likeListArr)
         return likeListArr;
 
     } catch (e) {
