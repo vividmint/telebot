@@ -86,36 +86,7 @@ exports.telebot = async(ctx) => {
     if (result || _movieObj) {
 
         //根据环境变量设置代理
-        const config = {
-            url: url + "/sendPhoto",
-            method: "POST",
-            body: {
-                "chat_id": thirdPartyId,
-                "photo": movieData.picUrl,
-                "caption": reply,
-                "reply_markup": {
-                    "inline_keyboard": [
-                        [{
-                                "text": BUTTON_LIKE,
-                                "callback_data": JSON.stringify({
-                                    "movieId": `${movieData.id}`,
-                                    "type": "like"
-                                })
-                            },
-                            {
-                                "text": BUTTON_UNLIKE,
-                                "callback_data": JSON.stringify({
-                                    "movieId": `${movieData.id}`,
-                                    "type": "nope"
-                                })
-                            }
-                        ]
-                    ],
-                    "resize_keyboard": true
-                }
-            },
-            json: true
-        }
+        var config;
         if (text === "❤️") {
             //获取喜欢列表
             var likeListArr = await queryLikeList(thirdPartyId);
@@ -136,7 +107,7 @@ exports.telebot = async(ctx) => {
                         }
                         reply = replyArr.join("\n\n");
                         console.log("reply", reply);
-                         config = {
+                        config = {
                             url: url + "/sendMessage",
                             method: "POST",
                             body: {
@@ -157,6 +128,37 @@ exports.telebot = async(ctx) => {
 
                 }
 
+            }
+        } else {
+            config = {
+                url: url + "/sendPhoto",
+                method: "POST",
+                body: {
+                    "chat_id": thirdPartyId,
+                    "photo": movieData.picUrl,
+                    "caption": reply,
+                    "reply_markup": {
+                        "inline_keyboard": [
+                            [{
+                                    "text": BUTTON_LIKE,
+                                    "callback_data": JSON.stringify({
+                                        "movieId": `${movieData.id}`,
+                                        "type": "like"
+                                    })
+                                },
+                                {
+                                    "text": BUTTON_UNLIKE,
+                                    "callback_data": JSON.stringify({
+                                        "movieId": `${movieData.id}`,
+                                        "type": "nope"
+                                    })
+                                }
+                            ]
+                        ],
+                        "resize_keyboard": true
+                    }
+                },
+                json: true
             }
         }
         console.log("config", config);
