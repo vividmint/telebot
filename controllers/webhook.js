@@ -132,7 +132,7 @@ exports.telebot = async(ctx) => {
                                 })
                             }
                         ]
-                    ]
+                    ],
                     "resize_keyboard":true
                 }
             },
