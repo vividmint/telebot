@@ -95,9 +95,12 @@ exports.telebot = async(ctx) => {
                     var likeMovieData = await queryMovieData(likeListArr[i].movieId);
                     likeMovieArr.push(likeMovieData);
                     console.log("likeMovieArr", likeMovieArr);
+                    var replyArr = [];
                     for (let i = 0; i < likeMovieArr.length; ++i) {
-                        reply += `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+                        var str = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+                        replyArr.push(str);
                     }
+                    reply = replyArr.join("\n\n");
                     console.log("reply", reply)
                 } catch (e) {
                     console.log('e', e);
@@ -107,7 +110,7 @@ exports.telebot = async(ctx) => {
 
         }
     }
-    if (result || _movieObj) {
+    else if (result || _movieObj) {
         //根据环境变量设置代理
         const config = {
             url,
@@ -196,11 +199,9 @@ async function queryMovieData(id) {
 }
 
 async function queryLikeList(id) {
-    console.log("here", id);
     var queryListString = `SELECT * FROM likeList WHERE uid=${id}`;
     try {
         var likeListArr = await mysql.query(queryListString);
-        console.log("here likeListArr", likeListArr)
         return likeListArr;
 
     } catch (e) {
@@ -226,8 +227,16 @@ async function postLike(obj, thirdPartyId) {
     let movieId = obj.movieId;
     let date = new Date();
     let createdAt = date.getTime();
+    var uid;
+    var queryUidString = `SELECT * from user WHERE thirdPartyId=${thirdPartyId}`;
+    try{
+      var uidArr = await mysql.query(queryUidString);
+       uid = uidArr[0].id;
+    }catch(e){
+      console.log('e',e);
+    }
 
-    var insertLikeIdString = `INSERT INTO likeList(id,uid,movieId,createdAt,updatedAt) VALUES(null,${thirdPartyId},${movieId},${createdAt},${createdAt})`;
+    var insertLikeIdString = `INSERT INTO likeList(id,uid,movieId,createdAt,updatedAt) VALUES(null,${uid},${movieId},${createdAt},${createdAt})`;
     try {
         var insertLikeIdResult = await mysql.query(insertLikeIdString);
     } catch (e) {
