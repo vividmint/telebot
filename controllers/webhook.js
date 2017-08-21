@@ -84,9 +84,25 @@ exports.telebot = async(ctx) => {
     let result = /movie|🙋|❤️/.test(text);
 
     if (result || _movieObj) {
-
+        var inline_keyboard = [
+            [{
+                    "text": BUTTON_LIKE,
+                    "callback_data": JSON.stringify({
+                        "movieId": `${movieData.id}`,
+                        "type": "like"
+                    })
+                },
+                {
+                    "text": BUTTON_UNLIKE,
+                    "callback_data": JSON.stringify({
+                        "movieId": `${movieData.id}`,
+                        "type": "nope"
+                    })
+                }
+            ]
+        ];
         if (text === "❤️") {
-          //获取喜欢列表
+            //获取喜欢列表
             var likeListArr = await queryLikeList(thirdPartyId);
             console.log("likeListArr", likeListArr)
             if (likeListArr.length === 0) {
@@ -104,6 +120,7 @@ exports.telebot = async(ctx) => {
                             replyArr.push(str);
                         }
                         reply = replyArr.join("\n\n");
+                        inline_keyboard = null;
                         console.log("reply", reply)
                     } catch (e) {
                         console.log('e', e);
@@ -123,26 +140,10 @@ exports.telebot = async(ctx) => {
             method: "POST",
             body: {
                 "chat_id": thirdPartyId,
-                "photo": movieData.picUrl,
+                "photo": text === "❤️" ? null : movieData.picUrl,
                 "caption": reply,
                 "reply_markup": {
-                    "inline_keyboard": [
-                        [{
-                                "text": BUTTON_LIKE,
-                                "callback_data": JSON.stringify({
-                                    "movieId": `${movieData.id}`,
-                                    "type": "like"
-                                })
-                            },
-                            {
-                                "text": BUTTON_UNLIKE,
-                                "callback_data": JSON.stringify({
-                                    "movieId": `${movieData.id}`,
-                                    "type": "nope"
-                                })
-                            }
-                        ]
-                    ],
+                    "inline_keyboard": inline_keyboard,
                     "resize_keyboard": true
                 }
             },
