@@ -84,49 +84,6 @@ exports.telebot = async(ctx) => {
     let result = /movie|🙋|❤️/.test(text);
 
     if (result || _movieObj) {
-        if (text === "❤️") {
-            //获取喜欢列表
-            var likeListArr = await queryLikeList(thirdPartyId);
-            console.log("likeListArr", likeListArr)
-            if (likeListArr.length === 0) {
-                reply = "暂时没有喜欢的电影~";
-            } else {
-                let likeMovieArr = [];
-                for (let i = 0; i < likeListArr.length; ++i) {
-                    try {
-                        var likeMovieData = await queryMovieData(likeListArr[i].movieId);
-                        likeMovieArr.push(likeMovieData);
-                        console.log("likeMovieArr", likeMovieArr);
-                        var replyArr = [];
-                        for (let i = 0; i < likeMovieArr.length; ++i) {
-                            var str = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
-                            replyArr.push(str);
-                        }
-                        reply = replyArr.join("\n\n");
-                        console.log("reply", reply);
-                        const config = {
-                            url: url + "/sendMessage",
-                            method: "POST",
-                            body: {
-                                "chat_id": thirdPartyId,
-                                "text": reply,
-                                "reply_markup": {
-                                    "resize_keyboard": true
-                                }
-                            },
-                            json: true
-                        }
-                    } catch (e) {
-                        console.log('e', e);
-                        ctx.status = 500;
-                        ctx.body = e;
-                        return;
-                    }
-
-                }
-
-            }
-        }
 
         //根据环境变量设置代理
         const config = {
@@ -158,6 +115,49 @@ exports.telebot = async(ctx) => {
                 }
             },
             json: true
+        }
+        if (text === "❤️") {
+            //获取喜欢列表
+            var likeListArr = await queryLikeList(thirdPartyId);
+            console.log("likeListArr", likeListArr)
+            if (likeListArr.length === 0) {
+                reply = "暂时没有喜欢的电影~";
+            } else {
+                let likeMovieArr = [];
+                for (let i = 0; i < likeListArr.length; ++i) {
+                    try {
+                        var likeMovieData = await queryMovieData(likeListArr[i].movieId);
+                        likeMovieArr.push(likeMovieData);
+                        console.log("likeMovieArr", likeMovieArr);
+                        var replyArr = [];
+                        for (let i = 0; i < likeMovieArr.length; ++i) {
+                            var str = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+                            replyArr.push(str);
+                        }
+                        reply = replyArr.join("\n\n");
+                        console.log("reply", reply);
+                         config = {
+                            url: url + "/sendMessage",
+                            method: "POST",
+                            body: {
+                                "chat_id": thirdPartyId,
+                                "text": reply,
+                                "reply_markup": {
+                                    "resize_keyboard": true
+                                }
+                            },
+                            json: true
+                        }
+                    } catch (e) {
+                        console.log('e', e);
+                        ctx.status = 500;
+                        ctx.body = e;
+                        return;
+                    }
+
+                }
+
+            }
         }
         console.log("config", config);
         console.log(ENV);
