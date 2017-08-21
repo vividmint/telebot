@@ -226,7 +226,7 @@ async function postLike(obj, thirdPartyId) {
     let date = new Date();
     let createdAt = date.getTime();
 
-    var insertLikeIdString = `INSERT INTO likeList(id,thirdPartyId,movieId,createdAt,updatedAt) VALUES(null,${thirdPartyId},${movieId},${createdAt},${createdAt})`;
+    var insertLikeIdString = `INSERT INTO likeList(id,uid,movieId,createdAt,updatedAt) VALUES(null,${thirdPartyId},${movieId},${createdAt},${createdAt})`;
     try {
         var insertLikeIdResult = await mysql.query(insertLikeIdString);
     } catch (e) {
