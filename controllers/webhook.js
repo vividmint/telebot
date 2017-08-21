@@ -95,15 +95,16 @@ exports.telebot = async(ctx) => {
                     var likeMovieData = await queryMovieData(likeListArr[i].movieId);
                     likeMovieArr.push(likeMovieData);
                     console.log("likeMovieArr", likeMovieArr);
+                    for (let i = 0; i < likeMovieArr.length; ++i) {
+                        reply += `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+                    }
+                    console.log("reply", reply)
                 } catch (e) {
                     console.log('e', e);
                 }
 
             }
-            for (let i = 0; i < likeMovieArr.length; ++i) {
-                reply = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
-            }
-            console.log("reply", reply)
+
         }
     }
     if (result || _movieObj) {
