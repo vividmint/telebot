@@ -80,27 +80,10 @@ exports.telebot = async(ctx) => {
     reply = `《${movieData.name}》\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
 
 
-    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
+    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}`;
     let result = /movie|🙋|❤️/.test(text);
 
     if (result || _movieObj) {
-        var inline_keyboard = [
-            [{
-                    "text": BUTTON_LIKE,
-                    "callback_data": JSON.stringify({
-                        "movieId": `${movieData.id}`,
-                        "type": "like"
-                    })
-                },
-                {
-                    "text": BUTTON_UNLIKE,
-                    "callback_data": JSON.stringify({
-                        "movieId": `${movieData.id}`,
-                        "type": "nope"
-                    })
-                }
-            ]
-        ];
         if (text === "❤️") {
             //获取喜欢列表
             var likeListArr = await queryLikeList(thirdPartyId);
@@ -120,8 +103,19 @@ exports.telebot = async(ctx) => {
                             replyArr.push(str);
                         }
                         reply = replyArr.join("\n\n");
-                        inline_keyboard = null;
-                        console.log("reply", reply)
+                        console.log("reply", reply);
+                        const config = {
+                            url: url + "/sendMessage",
+                            method: "POST",
+                            body: {
+                                "chat_id": thirdPartyId,
+                                "text": reply,
+                                "reply_markup": {
+                                    "resize_keyboard": true
+                                }
+                            },
+                            json: true
+                        }
                     } catch (e) {
                         console.log('e', e);
                         ctx.status = 500;
@@ -136,14 +130,30 @@ exports.telebot = async(ctx) => {
 
         //根据环境变量设置代理
         const config = {
-            url,
+            url: url + "/sendPhoto",
             method: "POST",
             body: {
                 "chat_id": thirdPartyId,
-                "photo": text === "❤️" ? null : movieData.picUrl,
+                "photo": movieData.picUrl,
                 "caption": reply,
                 "reply_markup": {
-                    "inline_keyboard": inline_keyboard,
+                    "inline_keyboard": [
+                        [{
+                                "text": BUTTON_LIKE,
+                                "callback_data": JSON.stringify({
+                                    "movieId": `${movieData.id}`,
+                                    "type": "like"
+                                })
+                            },
+                            {
+                                "text": BUTTON_UNLIKE,
+                                "callback_data": JSON.stringify({
+                                    "movieId": `${movieData.id}`,
+                                    "type": "nope"
+                                })
+                            }
+                        ]
+                    ],
                     "resize_keyboard": true
                 }
             },
