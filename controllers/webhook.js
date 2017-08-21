@@ -81,12 +81,12 @@ exports.telebot = async(ctx) => {
 
 
     var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
-    let result = /movie|🙋/.test(text);
+    let result = /movie|🙋|❤️/.test(text);
 
-     if (result || _movieObj) {
+    if (result || _movieObj) {
 
-        let getList = /❤️/.test(text);
-        if (getList) {
+        if (text === "❤️") {
+          //获取喜欢列表
             var likeListArr = await queryLikeList(thirdPartyId);
             console.log("likeListArr", likeListArr)
             if (likeListArr.length === 0) {
@@ -235,11 +235,11 @@ async function postLike(obj, thirdPartyId) {
     let createdAt = date.getTime();
     var uid;
     var queryUidString = `SELECT * from user WHERE thirdPartyId=${thirdPartyId}`;
-    try{
-      var uidArr = await mysql.query(queryUidString);
-       uid = uidArr[0].id;
-    }catch(e){
-      console.log('e',e);
+    try {
+        var uidArr = await mysql.query(queryUidString);
+        uid = uidArr[0].id;
+    } catch (e) {
+        console.log('e', e);
     }
 
     var insertLikeIdString = `INSERT INTO likeList(id,uid,movieId,createdAt,updatedAt) VALUES(null,${uid},${movieId},${createdAt},${createdAt})`;
