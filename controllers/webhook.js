@@ -85,7 +85,7 @@ exports.telebot = async(ctx) => {
     let getList = /❤️/.test(text);
     if (getList) {
         var likeListArr = await queryLikeList(thirdPartyId);
-        console.log("likeListArr",likeListArr)
+        console.log("likeListArr", likeListArr)
         if (likeListArr.length === 0) {
             reply = "暂时没有喜欢的电影~";
         } else {
@@ -100,10 +100,10 @@ exports.telebot = async(ctx) => {
                 }
 
             }
-            for(let i=0;i<likeMovieArr.length;++i){
-              reply = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+            for (let i = 0; i < likeMovieArr.length; ++i) {
+                reply = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
             }
-            console.log("reply",reply)
+            console.log("reply", reply)
         }
     }
     if (result || _movieObj) {
@@ -139,7 +139,8 @@ exports.telebot = async(ctx) => {
                         }, {
                             "text": "❤️"
                         }]
-                    ]
+                    ],
+                    "resize_keyboard":true
                 }
             },
             json: true
