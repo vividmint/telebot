@@ -82,35 +82,41 @@ exports.telebot = async(ctx) => {
 
     var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
     let result = /movie|🙋/.test(text);
-    let getList = /❤️/.test(text);
-    if (getList) {
-        var likeListArr = await queryLikeList(thirdPartyId);
-        console.log("likeListArr", likeListArr)
-        if (likeListArr.length === 0) {
-            reply = "暂时没有喜欢的电影~";
-        } else {
-            let likeMovieArr = [];
-            for (let i = 0; i < likeListArr.length; ++i) {
-                try {
-                    var likeMovieData = await queryMovieData(likeListArr[i].movieId);
-                    likeMovieArr.push(likeMovieData);
-                    console.log("likeMovieArr", likeMovieArr);
-                    var replyArr = [];
-                    for (let i = 0; i < likeMovieArr.length; ++i) {
-                        var str = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
-                        replyArr.push(str);
+
+     if (result || _movieObj) {
+
+        let getList = /❤️/.test(text);
+        if (getList) {
+            var likeListArr = await queryLikeList(thirdPartyId);
+            console.log("likeListArr", likeListArr)
+            if (likeListArr.length === 0) {
+                reply = "暂时没有喜欢的电影~";
+            } else {
+                let likeMovieArr = [];
+                for (let i = 0; i < likeListArr.length; ++i) {
+                    try {
+                        var likeMovieData = await queryMovieData(likeListArr[i].movieId);
+                        likeMovieArr.push(likeMovieData);
+                        console.log("likeMovieArr", likeMovieArr);
+                        var replyArr = [];
+                        for (let i = 0; i < likeMovieArr.length; ++i) {
+                            var str = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+                            replyArr.push(str);
+                        }
+                        reply = replyArr.join("\n\n");
+                        console.log("reply", reply)
+                    } catch (e) {
+                        console.log('e', e);
+                        ctx.status = 500;
+                        ctx.body = e;
+                        return;
                     }
-                    reply = replyArr.join("\n\n");
-                    console.log("reply", reply)
-                } catch (e) {
-                    console.log('e', e);
+
                 }
 
             }
-
         }
-    }
-    else if (result || _movieObj) {
+
         //根据环境变量设置代理
         const config = {
             url,
