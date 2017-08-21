@@ -14,7 +14,7 @@ const {
 exports.telebot = async(ctx) => {
     const obj = ctx.request.body;
     console.log('=====================================')
-    console.log('webhook request',obj)
+    console.log('webhook request', obj)
     var _obj = (JSON.stringify(obj, null, 2));
     var messageObj, _movieObj;
     if (obj.callback_query) {
@@ -31,32 +31,27 @@ exports.telebot = async(ctx) => {
     var nickname = messageObj.message.chat.first_name + messageObj.message.chat.last_name;
     var date = new Date();
     var createdAt = date.getTime();
-    var reply;
-
-    let queryUserString = `SELECT * FROM user WHERE thirdPartyId="${thirdPartyId}" and thirdPartyType="tg"`;
+    var reply, lastViewId;
 
     try {
-        var queryResultArr = await mysql.query(queryUserString);
+        var queryResultArr = await queryUser(thirdPartyId);
     } catch (e) {
-        console.log(e);
-        ctx.status = 504;
+        console.log('e', e);
+        ctx.status = 500;
         ctx.body = e;
         return;
     }
-    var lastViewId;
+
     if (queryResultArr.length === 0) {
         //new user
-        let signUpString = `INSERT INTO user(id, username,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${username}","${thirdPartyId}","${nickname}",${createdAt},1,"tg")`;
-        try {
-            var signUpRusult = await mysql.query(signUpString);
-
-        } catch (e) {
-            console.log(e);
-            ctx.status = 504;
-            ctx.body = e;
-            return;
-        }
+        signUp({
+            thirdPartyId,
+            username,
+            nickname,
+            createdAt
+        });
         lastViewId = 1;
+
     } else {
         //old user
         lastViewId = queryResultArr[0].lastViewId;
@@ -65,20 +60,8 @@ exports.telebot = async(ctx) => {
         let movieObj = JSON.parse(obj.callback_query.data);
         _movieObj = movieObj;
         if (movieObj.type === 'like') {
-            let movieId = movieObj.movieId;
-            let _date = new Date();
-            let _createdAt = _date.getTime();
-
-            var insertLikeIdString = `INSERT INTO likeList(id,movieId,createdAt,updatedAt) VALUES(null,${movieId},${_createdAt},${_createdAt})`;
-            try {
-                var insertLikeIdResult = await mysql.query(insertLikeIdString);
-            } catch (e) {
-                console.log('e', e);
-                ctx.status = 500;
-                ctx.body = e;
-                return;
-            }
-
+            //喜欢电影
+            postLike(_movieObj, thirdPartyId);
         }
 
     } else {
@@ -98,7 +81,29 @@ exports.telebot = async(ctx) => {
 
 
     var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
-    let result = /movie/.test(text);
+    let result = /movie|🙋/.test(text);
+    let getList = /❤️/.test(text);
+    if (getList) {
+        var likeListArr = await queryLikeList(thirdPartyId);
+        if (likeListArr.length === 0) {
+            reply = "暂时没有喜欢的电影~";
+        } else {
+            let likeMovieArr = [];
+            for (let i = 0; i < likeListArr.length; ++i) {
+                try {
+                    var likeMovieData = await queryMovieData(likeListArr[i].movieId);
+                    likeMovieArr.push(likeMovieData);
+                } catch (e) {
+                    console.log('e', e);
+                }
+
+            }
+            console.log("likeMovieArr", likeMovieArr);
+            for(let i=0;i<likeMovieArr.length;++i){
+              reply = `《${likeMovieArr[i].name}》\n豆瓣评分：${likeMovieArr[i].score}\n主演：${likeMovieArr[i].info}`;
+            }
+        }
+    }
     if (result || _movieObj) {
         //根据环境变量设置代理
         const config = {
@@ -145,17 +150,10 @@ exports.telebot = async(ctx) => {
         try {
             var tgResult = await request(config);
 
-            var setLastViewId = `UPDATE user SET lastViewId=${lastViewId+1} WHERE username="${username}"`;
-            try {
-                var setLastViewIdResult = await mysql.query(setLastViewId);
-                console.log("set ok")
-
-            } catch (e) {
-                console.log('e', e);
-                ctx.status = 500;
-                ctx.body = e;
-                return;
-            }
+            setLastViewId({
+                lastViewId,
+                username
+            })
 
         } catch (e) {
             console.log("e", e);
@@ -172,6 +170,17 @@ exports.telebot = async(ctx) => {
     }
 
 }
+async function queryUser(thirdPartyId) {
+    let queryUserString = `SELECT * FROM user WHERE thirdPartyId="${thirdPartyId}" and thirdPartyType="tg"`;
+
+    try {
+        var queryResultArr = await mysql.query(queryUserString);
+    } catch (e) {
+        console.log(e);
+        return Promise.reject(e);
+    }
+    return queryResultArr;
+}
 
 async function queryMovieData(id) {
     var queryMovieString = `SELECT * FROM movie WHERE id=${id}`;
@@ -187,4 +196,54 @@ async function queryMovieData(id) {
     }
     var movieData = movieArr[0];
     return movieData;
+}
+
+async function queryLikeList(id) {
+    var queryListString = `SELECT * FROM likeList WHERE uid=${id}`;
+    try {
+        var likeListArr = await mysql.query(queryListString);
+        return likeListArr;
+
+    } catch (e) {
+        console.log('e', e);
+        return Promise.reject(e);
+    }
+
+}
+
+async function setLastViewId(params) {
+    var setLastViewIdString = `UPDATE user SET lastViewId=${params.lastViewId+1} WHERE username="${params.username}"`;
+    try {
+        var setLastViewIdArr = await mysql.query(setLastViewIdString);
+        console.log("set ok")
+
+    } catch (e) {
+        console.log('e', e);
+        return Promise.reject(e);
+    }
+}
+
+async function postLike(obj, thirdPartyId) {
+    let movieId = obj.movieId;
+    let date = new Date();
+    let createdAt = date.getTime();
+
+    var insertLikeIdString = `INSERT INTO likeList(id,thirdPartyId,movieId,createdAt,updatedAt) VALUES(null,${thirdPartyId},${movieId},${createdAt},${createdAt})`;
+    try {
+        var insertLikeIdResult = await mysql.query(insertLikeIdString);
+    } catch (e) {
+        console.log('e', e);
+        return Promise.reject(e);
+    }
+}
+
+async function signUp(params) {
+    let signUpString = `INSERT INTO user(id, username,thirdPartyId, nickname, createdAt, lastViewId,thirdPartyType) VALUES (null,"${params.username}","${params.thirdPartyId}","${params.nickname}",${params.createdAt},1,"tg")`;
+    try {
+        var signUpRusult = await mysql.query(signUpString);
+
+    } catch (e) {
+        console.log('e', e);
+        return Promise.reject(e);
+    }
 }
