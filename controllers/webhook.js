@@ -80,7 +80,7 @@ exports.telebot = async(ctx) => {
     reply = `《${movieData.name}》\n豆瓣评分：${movieData.score}\n主演：${movieData.info}`;
 
 
-    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendPhoto`;
+    var url = `https://api.telegram.org/bot${TELEBOT_TOKEN}/sendMessage`;
     let result = /movie|🙋/.test(text);
     let getList = /❤️/.test(text);
     if (getList) {
@@ -113,8 +113,7 @@ exports.telebot = async(ctx) => {
             method: "POST",
             body: {
                 "chat_id": thirdPartyId,
-                "photo": movieData.picUrl,
-                "caption": reply,
+                "text": movieData.picUrl+reply,
                 "reply_markup": {
                     "inline_keyboard": [
                         [{
