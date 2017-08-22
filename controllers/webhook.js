@@ -108,18 +108,7 @@ exports.telebot = async(ctx) => {
                         }
                         reply = replyArr.join("\n\n");
                         console.log("reply", reply);
-                        config = {
-                            url: url + "/sendMessage",
-                            method: "POST",
-                            body: {
-                                "chat_id": thirdPartyId,
-                                "text": reply,
-                                "reply_markup": {
-                                    "resize_keyboard": true
-                                }
-                            },
-                            json: true
-                        }
+
                     } catch (e) {
                         console.log('e', e);
                         ctx.status = 500;
@@ -128,7 +117,28 @@ exports.telebot = async(ctx) => {
                     }
 
                 }
-
+            }
+            config = {
+                url: url + "/sendMessage",
+                method: "POST",
+                body: {
+                    "chat_id": thirdPartyId,
+                    "text": reply,
+                    "reply_markup": {
+                        "resize_keyboard": true
+                    }
+                },
+                "reply_markup": {
+                    keyboard: [
+                        [{
+                            "text": " 🙋"
+                        }, {
+                            "text": "❤️"
+                        }]
+                    ]
+                },
+                "resize_keyboard": true,
+                json: true
             }
         } else {
             config = {
