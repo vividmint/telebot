@@ -92,6 +92,7 @@ exports.telebot = async(ctx) => {
             var likeListArr = await queryLikeList(thirdPartyId);
             console.log("likeListArr", likeListArr)
             if (likeListArr.length === 0) {
+                console.log("here");
                 reply = "暂时没有喜欢的电影~";
             } else {
                 let likeMovieArr = [];
