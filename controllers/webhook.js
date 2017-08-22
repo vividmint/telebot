@@ -135,9 +135,9 @@ exports.telebot = async(ctx) => {
                         }, {
                             "text": "❤️"
                         }]
-                    ]
+                    ],
+                    "resize_keyboard": true
                 },
-                "resize_keyboard": true,
                 json: true
             }
         } else {
@@ -166,6 +166,15 @@ exports.telebot = async(ctx) => {
                                 }
                             ]
                         ],
+                        "reply_markup": {
+                            keyboard: [
+                                [{
+                                    "text": " 🙋"
+                                }, {
+                                    "text": "❤️"
+                                }]
+                            ]
+                        },
                         "resize_keyboard": true
                     }
                 },
@@ -229,9 +238,19 @@ async function queryMovieData(id) {
 }
 
 async function queryLikeList(id) {
-    var queryListString = `SELECT * FROM likeList WHERE uid=${id}`;
+    var queryUidString = `SELECT * FROM user WHERE thirdPartyId=${id}`;
+    var uid;
+    try {
+        var queryUidArr = await mysql.query(queryUidString);
+        uid = queryUidArr[0].id;
+    } catch (e) {
+        console.log('e', e);
+        return Promise.reject(e);
+    }
+    var queryListString = `SELECT * FROM likeList WHERE uid=${uid}`;
     try {
         var likeListArr = await mysql.query(queryListString);
+        console.log("====likeListArr", likeListArr)
         return likeListArr;
 
     } catch (e) {
@@ -269,6 +288,8 @@ async function postLike(obj, thirdPartyId) {
     var insertLikeIdString = `INSERT INTO likeList(id,uid,movieId,createdAt,updatedAt) VALUES(null,${uid},${movieId},${createdAt},${createdAt})`;
     try {
         var insertLikeIdResult = await mysql.query(insertLikeIdString);
+        console.log("insertLikeIdResult", insertLikeIdResult)
+        console.log('like ok')
     } catch (e) {
         console.log('e', e);
         return Promise.reject(e);
